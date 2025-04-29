@@ -103,7 +103,7 @@ export const getSuggestedUsers= async(req, res)=>{
   }
 }
 export const updateUser = async(req, res)=>{
-  const {username, fullName, email, currentPassword, newPassword, bio, Link} = req.body;
+  const {username, fullName, email, currentPassword, newPassword, bio, link} = req.body;
   let {profilePicture, coverPicture} = req.body;
   const userId = req.user._id;
 
@@ -148,6 +148,19 @@ export const updateUser = async(req, res)=>{
       profilePicture = uploadedResopnse.secure_url;
 
     }
+
+    user.username = username || user.username;
+    user.fullName = fullName || user.fullName;
+    user.email = email || user.email;
+    user.bio = bio || user.bio;
+    user.link = link || user.link;
+    user.profilePicture = profilePicture || user.profilePicture;
+    user.coverPicture = coverPicture || user.coverPicture;
+
+    user = await user.save();
+    user.password = null; // Remove password from the response
+    return res.status(200).json(user)
+
 
   } catch (error) {
     console.log("error in updating user", error.message);
