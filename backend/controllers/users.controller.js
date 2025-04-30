@@ -108,7 +108,7 @@ export const updateUser = async(req, res)=>{
   const userId = req.user._id;
 
   try {
-    const user = await User.findById(userId);
+    let user = await User.findById(userId);
     if(!user){
       return res.status(404).json({message: 'User not found'})
     }
@@ -130,20 +130,25 @@ export const updateUser = async(req, res)=>{
         return res.status(400).json({error: 'New password must be at least 6 characters long'})
       }
       const salt = await bcrypt.genSalt(10); 
-      newPassword = await bcrypt.hash(newPassword, salt);
-
-    
-      user.password = newPassword;
+      user.password =  await bcrypt.hash(newPassword, salt);
     }
 
     //profile picture and cover picture
     if(profilePicture){
+      if(user.profilePicture){
+        const publicId = user.profilePicture.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      }
       const uploadedResopnse = await cloudinary.uploader.upload(profilePicture)
       profilePicture = uploadedResopnse.secure_url;
 
       
     }
     if(coverPicture){
+      if(user.coverPicture){
+        const publicId = user.coverPicture.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      }
       const uploadedResopnse = await cloudinary.uploader.upload(coverPicture)
       profilePicture = uploadedResopnse.secure_url;
 
