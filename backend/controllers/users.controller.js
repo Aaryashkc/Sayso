@@ -112,8 +112,6 @@ export const updateUser = async(req, res)=>{
     if(!user){
       return res.status(404).json({message: 'User not found'})
     }
-    if(username){
-      }
 
       //this us just for password update
 
