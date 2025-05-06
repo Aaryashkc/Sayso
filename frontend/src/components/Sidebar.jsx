@@ -1,8 +1,31 @@
 import { Link } from "react-router-dom";
 import { Home, Bell, User, LogOut } from "lucide-react";
 import LOGO from "../assets/sidebarlogo.png";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+
+
 
 const Sidebar = () => {
+
+  const {mutate: logout, isError, error}= useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Logout failed");
+      }
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Logged out successfully");
+    },
+  })
   const data = {
     fullName: "Mandavi Dhakal",
     username: "mandavi",
@@ -59,7 +82,13 @@ const Sidebar = () => {
                 <p className="font-bold text-sm w-20 truncate">{data?.fullName}</p>
                 <p className="text-slate-500 text-sm">@{data?.username}</p>
               </div>
-              <LogOut size={20} className="cursor-pointer" />
+              <LogOut  size={20} className="cursor-pointer" onClick={(e) =>{
+                e.preventDefault();
+                logout();
+                if (isError) {
+                  toast.error(error.message);
+                }
+              }} />
             </div>
           </Link>
         )}

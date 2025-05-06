@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, User, Lock, FileText } from "lucide-react";
 import LOGO from "../../assets/logo.png";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -11,16 +13,36 @@ const SignupPage = () => {
     password: "",
   });
 
+  const {mutate, isError, isPending, error} = useMutation({
+    mutationFn: async (formData) => {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Signup failed");
+      }
+      console.log(data);
+      return data;
+    },
+    onSuccess: () => {
+			toast.success("Account created successfully");
+		},
+  })
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
+    mutate(formData)
   };
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const isError = false;
 
   return (
     <div className="max-w-screen-xl mx-auto flex h-screen px-10">
@@ -93,10 +115,10 @@ const SignupPage = () => {
           </label>
           
           {/* Submit button */}
-          <button className="btn rounded-full btn-primary text-white">Sign up</button>
+          <button className="btn rounded-full btn-primary text-white">{isPending ? "Loading..." : "Sign up"}</button>
           
           {/* Error message */}
-          {isError && <p className="text-red-500">Something went wrong</p>}
+          {isError && <p className="text-red-500">{error.message}</p>}
         </form>
         
         {/* Sign in link */}
