@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { User, Lock } from "lucide-react";
 import LOGO from "../../assets/logo.png";
-import { useMutation } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 
 const LoginPage = () => {
@@ -11,6 +10,8 @@ const LoginPage = () => {
     username: "",
     password: "",
   });
+
+  const queryClient = useQueryClient();
 
   const {mutate: loginMutation, isError, isPending, error} = useMutation({
     mutationFn: async (formData) => {
@@ -29,7 +30,9 @@ const LoginPage = () => {
       return data;
     },
     onSuccess: () => {
-			toast.success("Login successful");
+      // Invalidate and refetch
+      // This will refetch the authUser query to get the updated user data after login
+      queryClient.invalidateQueries({queryKey: ["authUser"]});
 		},
   })
   const handleSubmit = (e) => {
@@ -46,7 +49,7 @@ const LoginPage = () => {
     <div className="max-w-screen-xl mx-auto flex h-screen px-10">
       {/* Left side with logo - hidden on small screens */}
       <div className="flex-1 hidden lg:flex items-center justify-center">
-        <img src={LOGO} alt="Logo" className="lg:w-90" />
+        <img src={LOGO} alt="Logo" className="lg:w-80" />
       </div>
       
       {/* Right side with form */}

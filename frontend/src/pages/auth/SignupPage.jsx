@@ -48,7 +48,7 @@ const SignupPage = () => {
     <div className="max-w-screen-xl mx-auto flex h-screen px-10">
       {/* Left side with logo - hidden on small screens */}
       <div className="flex-1 hidden lg:flex items-center justify-center">
-        <img src={LOGO} alt="Logo" className="lg:w-2/3" />
+        <img src={LOGO} alt="Logo" className="lg:w-80" />
       </div>
       
       {/* Right side with form */}

@@ -1,12 +1,16 @@
 import { Link } from "react-router-dom";
 import { Home, Bell, User, LogOut } from "lucide-react";
 import LOGO from "../assets/sidebarlogo.png";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { use } from "react";
 
 
 
 const Sidebar = () => {
+
+
+  const queryClient = useQueryClient();
 
   const {mutate: logout, isError, error}= useMutation({
     mutationFn: async () => {
@@ -23,20 +27,20 @@ const Sidebar = () => {
       return data;
     },
     onSuccess: () => {
+      // clear user so App.jsx redirect logic kicks in immediately
+      queryClient.setQueryData(["authUser"], null);
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
       toast.success("Logged out successfully");
     },
   })
-  const data = {
-    fullName: "Mandavi Dhakal",
-    username: "mandavi",
-    profileImg: "/avatars/girl1.png",
-  };
+  const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+
 
   // Navigation items
   const navItems = [
     { path: "/", icon: <Home size={24} />, label: "Home" },
     { path: "/notifications", icon: <Bell size={22} />, label: "Notifications" },
-    { path: `/profile/${data?.username}`, icon: <User size={22} />, label: "Profile" },
+    { path: `/profile/${authUser?.username}`, icon: <User size={22} />, label: "Profile" },
   ];
 
   return (
@@ -67,20 +71,20 @@ const Sidebar = () => {
         </ul>
 
         {/* User Profile */}
-        {data && (
+        {authUser && (
           <Link
-            to={`/profile/${data.username}`}
+            to={`/profile/${authUser.username}`}
             className="mt-auto mb-10 flex gap-2 items-start transition-all duration-300 hover:bg-primary/20 py-2 px-4 rounded-full"
           >
             <div className="avatar hidden md:inline-flex">
               <div className="w-8 rounded-full">
-                <img src={data?.profileImg || "/avatar-placeholder.png"} alt="Profile" />
+                <img src={authUser?.profileImg || "/avatar-placeholder.png"} alt="Profile" />
               </div>
             </div>
             <div className="flex justify-between flex-1">
               <div className="hidden md:block">
-                <p className="font-bold text-sm w-20 truncate">{data?.fullName}</p>
-                <p className="text-slate-500 text-sm">@{data?.username}</p>
+                <p className="font-bold text-sm w-20 truncate">{authUser?.fullName}</p>
+                <p className="text-slate-500 text-sm">@{authUser?.username}</p>
               </div>
               <LogOut  size={20} className="cursor-pointer" onClick={(e) =>{
                 e.preventDefault();
