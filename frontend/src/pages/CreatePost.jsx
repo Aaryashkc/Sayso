@@ -76,12 +76,12 @@ const CreatePost = () => {
           <div className="flex gap-1 items-center">
             <Image
               size={24}
-              className="text-primary cursor-pointer"
+              className="text-blue-400 cursor-pointer"
               onClick={() => imgRef.current.click()}
             />
             <Smile 
               size={20} 
-              className="text-primary cursor-pointer" 
+              className="text-blue-400 cursor-pointer" 
             />
           </div>
           

@@ -72,13 +72,13 @@ const NotificationPage = () => {
         <div className="border-b border-gray-700" key={notification._id}>
           <div className="flex gap-2 p-4">
             {notification.type === "follow" && (
-              <User className="w-7 h-7 text-primary" />
+              <User className="w-7 h-7 text-indigo-500" />
             )}
             {notification.type === "like" && (
               <Heart className="w-7 h-7 text-red-500" />
             )}
             {notification.type === "comment" && (
-              <MessageCircle className="w-7 h-7 text-secondary" />
+              <MessageCircle className="w-7 h-7 text-blue-400" />
             )}
             
             <Link to={`/profile/${notification.from.username}`}>
