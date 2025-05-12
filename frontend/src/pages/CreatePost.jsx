@@ -59,7 +59,7 @@ const CreatePost = () => {
       <div className="avatar">
         <div className="w-8 rounded-full">
           <img 
-            src={authUser.profileImg || "/avatar-placeholder.png"} 
+            src={authUser.profilePicture || "/avatar-placeholder.png"} 
             alt="User Avatar" 
           />
         </div>
@@ -116,7 +116,7 @@ const CreatePost = () => {
           />
           
           {/* Post Button */}
-          <button className="btn btn-primary rounded-full btn-sm text-white px-4">
+          <button className="btn bg-blue-400 rounded-full btn-sm text-white px-4">
             {isPending ? "Posting..." : "Post"}
           </button>
         </div>
