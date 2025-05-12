@@ -2,42 +2,57 @@ import { Link } from "react-router-dom";
 import LoadingSpinner from "../skeletons/LoadingSpinner.jsx";
 import { Settings, User, Heart, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const NotificationPage = () => {
-  const isLoading = false;
-  const notifications = [
-    {
-      _id: "1",
-      from: {
-        _id: "1",
-        username: "johndoe",
-        profileImg: "/avatars/boy2.png",
-      },
-      type: "follow",
-    },
-    {
-      _id: "2",
-      from: {
-        _id: "2",
-        username: "janedoe",
-        profileImg: "/avatars/girl1.png",
-      },
-      type: "like",
-    },
-    {
-      _id: "3",
-      from: {
-        _id: "3",
-        username: "janedoe",
-        profileImg: "/avatars/girl1.png",
-      },
-      type: "comment",
-    },
-  ];
+  const queryClient = useQueryClient();
+  const{data:notifications, isLoading} = useQuery({
+    queryKey: ["notifications"],
+    queryFn: async()=>{
+      try {
+        const response = await fetch(`/api/notifications`);
+        const data = await response.json();
+        if(!response.ok){
+          throw new Error(data.error || "Something went wrong")
+        }
+        return data
+        
+      } catch (error) {
+        throw new Error(error.message)
+      }
+    }
+  })
 
-  const deleteNotifications = () => {
-    toast.error("All notifications deleted");
-  };
+  const {mutate: deleteNotify}= useMutation(
+    {
+   mutationFn: async()=>{
+    try {
+         const response = await fetch(`/api/notifications`,
+          {
+            method: "DELETE",
+          }
+         )
+        const data = await response.json()
+        if(!response.ok){
+          throw new Error(data.error || "Something went wrong")
+        }
+        return data
+      
+    } catch (error) {
+      throw new Error(error.message)
+    }
+   },
+   onError:(error)=>{
+    toast.error(error.message)
+   },
+   onSuccess:()=>{
+    toast.success('Notification deleted successfully')
+    queryClient.invalidateQueries({queryKey: ["notifications"]})
+
+   }
+    }
+  )
+
 
   return (
     <div className="flex-[4_4_0] border-l border-r border-none min-h-screen">
@@ -52,7 +67,7 @@ const NotificationPage = () => {
             className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
           >
             <li>
-              <a onClick={deleteNotifications}>Delete all notifications</a>
+              <a onClick={()=>deleteNotify()}>Delete all notifications</a>
             </li>
           </ul>
         </div>
