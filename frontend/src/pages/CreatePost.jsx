@@ -1,20 +1,40 @@
 import { useRef, useState } from "react";
 import { Image, Smile, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const CreatePost = () => {
   const [text, setText] = useState("");
   const [img, setImg] = useState(null);
   const imgRef = useRef(null);
-  const isPending = false;
-  const isError = false;
-  const data = {
-    profileImg: "/avatars/girl1.png",
-  };
+
+  const {data: authUser} = useQuery({queryKey : ["authUser"]});
+  const queryClient = useQueryClient();
+
+  const {mutate: CreatePost, isPending, isError, error} = useMutation({
+    mutationFn: async ({text, img}) => {
+      const response = await fetch("/api/posts/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text, image: img }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error("Something went wrong");
+      return data;
+    },
+    onSuccess: () => {
+      setText("");
+			setImg(null);
+			toast.success("Post created successfully");
+			queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast.success("Post created successfully");
+    CreatePost({text, img})
   };
 
   const handleImgChange = (e) => {
@@ -39,7 +59,7 @@ const CreatePost = () => {
       <div className="avatar">
         <div className="w-8 rounded-full">
           <img 
-            src={data.profileImg || "/avatar-placeholder.png"} 
+            src={authUser.profileImg || "/avatar-placeholder.png"} 
             alt="User Avatar" 
           />
         </div>
@@ -47,6 +67,7 @@ const CreatePost = () => {
       
       {/* Post Creation Form */}
       <form className="flex flex-col gap-2 w-full" onSubmit={handleSubmit}>
+
         {/* Text Input */}
         <textarea
           className="textarea w-full p-0 text-lg resize-none border-none focus:outline-none border-gray-800"
@@ -101,7 +122,7 @@ const CreatePost = () => {
         </div>
         
         {/* Error Message */}
-        {isError && <div className="text-red-500">Something went wrong</div>}
+        {isError && <div className="text-red-500">{error.message}</div>}
       </form>
     </div>
   );

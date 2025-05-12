@@ -1,16 +1,48 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { MessageCircle, Repeat, Heart, Bookmark, Trash2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import LoadingSpinner from "../skeletons/LoadingSpinner";
 
 const Post = ({ post }) => {
   const [comment, setComment] = useState("");
+  const {data: authUser} = useQuery({queryKey : ["authUser"]});
+  const queryClient = useQueryClient();
+  const{mutate: deletepost, isPending} = useMutation({
+    mutationFn: async (postId) => {
+      const response = await fetch(`/api/posts/${post._id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authUser.token}`,
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to delete post");
+      }
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Post deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+
+    },
+    onError: (error) => {
+
+    },
+  })
   const postOwner = post.user;
   const isLiked = true;
-  const isMyPost = false;
+  const isMyPost = authUser._id === postOwner._id;
   const formattedDate = "1h";
   const isCommenting = false;
 
-  const handleDeletePost = () => {};
+  const handleDeletePost = () => {
+    deletepost();
+
+  };
   const handlePostComment = (e) => {
     e.preventDefault();
   };
@@ -47,6 +79,9 @@ const Post = ({ post }) => {
                 className="cursor-pointer hover:text-red-500" 
                 onClick={handleDeletePost} 
               />
+              {isPending && (
+                <LoadingSpinner size={16} className="text-red-500" />
+              )}
             </span>
           )}
         </div>
@@ -54,9 +89,9 @@ const Post = ({ post }) => {
         {/* Post Body */}
         <div className="flex flex-col gap-3 overflow-hidden">
           <span>{post.text}</span>
-          {post.img && (
+          {post.image && (
             <img
-              src={post.img}
+              src={post.image}
               className="h-80 object-contain rounded-lg border border-gray-700"
               alt="Post image"
             />
