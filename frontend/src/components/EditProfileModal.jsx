@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import useUpdateProfile from "../hooks/useUpdateProfile";
 
 const EditProfileModal = ({authUser}) => {
