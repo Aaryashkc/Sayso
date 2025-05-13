@@ -8,9 +8,11 @@ import EditProfileModal from "../components/EditProfileModal.jsx";
 import { POSTS } from "../utils/dummy";
 
 import { ArrowLeft, Calendar, ExternalLink,  Edit} from "lucide-react";
-import toast from "react-hot-toast";
-import { isCancelledError, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../utils/functions.js";
+import useFollow from "../hooks/useFollow.jsx"
+import useUpdateProfile from "../hooks/useUpdateProfile.jsx";
+
 const ProfilePage = () => {
 	const [coverPicture, setcoverPicture] = useState(null);
 	const [profilePicture, setprofilePicture] = useState(null);
@@ -21,9 +23,13 @@ const ProfilePage = () => {
 
 	const{username}= useParams()
 
+	const { follow, isPending } = useFollow();
 
-	const isMyProfile = true;
+	const queryClient= useQueryClient();
 
+
+
+  const {data:authUser}= useQuery({queryKey:['authUser']});
 
 	const {data:user, isLoading, refetch, isRefetching}= useQuery({
 		queryKey:['userProfile'],
@@ -41,7 +47,13 @@ const ProfilePage = () => {
 			}
 		}
 		})
+
+		const{updateProfile, isUpdating}= useUpdateProfile();
+
+
+		const isMyProfile = authUser._id === user?._id
 		const memberSinceDate = formatMemberSinceDate(user?.createdAt)
+		const amIfollowing= authUser?.following.includes(user?._id)
 
 	const handleImgChange = (e, state) => {
 		const file = e.target.files[0];
@@ -120,25 +132,34 @@ const ProfilePage = () => {
 												/>
 											)}
 										</div>
-									</div>
+									</div>h
 								</div>
 							</div>
 							<div className='flex justify-end px-4 mt-5'>
-								{isMyProfile && <EditProfileModal />}
+								{isMyProfile && <EditProfileModal authUser={authUser} />}
 								{!isMyProfile && (
 									<button
 										className='btn btn-outline rounded-full btn-sm'
-										onClick={() => toast.success("Followed successfully")}
+										onClick={() =>follow(user?._id)}
 									>
-										Follow
+										{isPending && "Loading..."}
+										{!isPending && amIfollowing &&"Unfollow"}
+										{!isPending && !amIfollowing &&"Follow"}
+
 									</button>
 								)}
 								{(coverPicture || profilePicture) && (
 									<button
 										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
-										onClick={() => toast.success("Profile updated successfully")}
+										onClick={async () => {await updateProfile({coverPicture, profilePicture})
+										setprofilePicture(null)
+										setcoverPicture(null)
+									}
+									
+									}
+										
 									>
-										Update
+										{isUpdating ? "Updating..." : "Update"}
 									</button>
 								)}
 							</div>
@@ -154,14 +175,14 @@ const ProfilePage = () => {
 									{user?.link && (
 										<div className='flex gap-1 items-center '>
 											<>
-												<ExternalLink size={12} className='text-slate-500' />
+												<ExternalLink className='w-3 h-3 text-slate-500' />
 												<a
-													href='https://aaryashkc.tech/'
+													href={user?.link.startsWith('http://') || user?.link.startsWith('https://') ? user?.link : `https://${user?.link}`}
 													target='_blank'
 													rel='noreferrer'
 													className='text-sm text-blue-500 hover:underline'
 												>
-													aaryashkc.tech
+													{user?.link}
 												</a>
 											</>
 										</div>
@@ -205,7 +226,7 @@ const ProfilePage = () => {
 						</>
 					)}
 
-					<Posts />
+					<Posts feedType={feedType} username={username} userId={user?._id}/>
 				</div>
 			</div>
 		</>

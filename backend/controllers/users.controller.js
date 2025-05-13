@@ -137,8 +137,8 @@ export const updateUser = async(req, res)=>{
         const publicId = user.profilePicture.split('/').pop().split('.')[0];
         await cloudinary.uploader.destroy(publicId);
       }
-      const uploadedResopnse = await cloudinary.uploader.upload(profilePicture)
-      profilePicture = uploadedResopnse.secure_url;
+      const uploadedResponse = await cloudinary.uploader.upload(profilePicture)
+      profilePicture = uploadedResponse.secure_url;
 
       
     }
@@ -147,8 +147,8 @@ export const updateUser = async(req, res)=>{
         const publicId = user.coverPicture.split('/').pop().split('.')[0];
         await cloudinary.uploader.destroy(publicId);
       }
-      const uploadedResopnse = await cloudinary.uploader.upload(coverPicture)
-      profilePicture = uploadedResopnse.secure_url;
+      const uploadedResponse = await cloudinary.uploader.upload(coverPicture)
+      coverPicture = uploadedResponse.secure_url;
 
     }
 
